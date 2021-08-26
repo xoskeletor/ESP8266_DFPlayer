@@ -3,7 +3,7 @@
   DFPlayer mini controlled by the Wemos D1mini ESP8266 module using serial
   Play until end of track using BUSY pin to block
   Bi-directional communication via WiFi
-  Send and receive UDP packets with client ESP
+  Send and receive UDP packets with host ESP_A
   Built upon "DFPlayer_ESP8266_noLibrary_CMD.ino" and 
   https://siytek.com/communication-between-two-esp8266/ and 
   https://www.instructables.com/ESP8266-Direct-Data-Communication/  
