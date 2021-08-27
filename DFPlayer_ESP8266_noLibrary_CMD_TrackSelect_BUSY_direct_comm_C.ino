@@ -3,7 +3,7 @@
   DFPlayer mini controlled by the Wemos D1mini ESP8266 module using serial
   Play until end of track using BUSY pin to block
   Bi-directional communication via WiFi
-  Send and receive UDP packets with host ESP_A
+  Send and receive UDP packets with host ESP
   Built upon "DFPlayer_ESP8266_noLibrary_CMD.ino" and 
   https://siytek.com/communication-between-two-esp8266/ and 
   https://www.instructables.com/ESP8266-Direct-Data-Communication/  
@@ -51,7 +51,7 @@ char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
 SoftwareSerial serDF (D1, D2); // in | out WeMos
 
 ///////////////////////////////////////////////////// Initialize Parameters
-uint8_t volume = 25; // 30 max
+uint8_t volume = 18; // 30 max
 char ball = 255;
 bool buttonST = 1;
 
@@ -59,24 +59,28 @@ bool buttonST = 1;
 void setup() {
   // set up serial port with DFPlayer
   serDF.begin(BaudRate_DF);
+  delay(100);
   // set up serial port USB;
   Serial.begin(BaudRate_ESP);
-  Serial.println();
+  delay(100);
   // set pin modes
   pinMode(D1, INPUT); // From DFplayer TX
   pinMode(D2, OUTPUT); // To DFplayer RX
   pinMode(D5, INPUT); // From DFplayer BUSY pin
-  pinMode(D4, INPUT); // Button
+  pinMode(D4, INPUT); // Button or LDR sensor
   pinMode(D7, OUTPUT); // Standby indicator LED
   
   // Initialize DFPlayer
   initialize();
-  delay(100);
+  delay(500);
   setVolume(volume);
-  delay(100);
+  delay(500);
   playTrack(1);
-  delay(1000); // play duration
-
+  delay(3000); // play duration
+  
+  // Stop active previous WIFI
+  WiFi.disconnect();
+  
   // begin WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   WiFi.mode(WIFI_STA);
@@ -86,19 +90,29 @@ void setup() {
   Serial.print("Connecting to ");
   Serial.print(WIFI_SSID);
 
-  // loop continuously while WiFi is not connected
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    Serial.print(".");
-  }
-  // Connected to WiFi
+  // loop continuously until time-out while WiFi is not connected
+  uint8_t i = 0;
   Serial.println();
-  Serial.print("Connected! IP address: ");
-  Serial.println(WiFi.localIP());
-
+  while (WiFi.status() != WL_CONNECTED && i < 4) {
+    delay(1000);
+    Serial.print(++i);
+    Serial.print("...");
+  }
+  
+  // Connection to WiFi
+  Serial.println();
+  if (WiFi.status() != WL_CONNECTED) {
+            Serial.printf("Could not connect after %d seconds", i);
+  }
+  else {
+            Serial.print("Connected! IP address: ");
+            Serial.println(WiFi.localIP());
+  }
+  
   // begin UDP port
   UDP.begin(UDP_PORT);
-  Serial.print("Sending on UDP port ");
+  Serial.println();
+  Serial.println("Starting UDP port ");
   Serial.println(UDP_PORT);
 
   // turn on standby indicator LED
@@ -143,10 +157,11 @@ void loop() {
 
                         // send UDP packet
                         UDP.beginPacket(remote_IP, UDP_PORT);
-                        Serial.println("UDP start...");
+                        Serial.println();
+                        Serial.println("Sending UDP...");
                         UDP.write(ball);
                         UDP.endPacket();
-                        Serial.println("Sending UDP packet value: ");
+                        Serial.println("UDP packet value: ");
                         Serial.print(ball);
                         delay(100);
             }
