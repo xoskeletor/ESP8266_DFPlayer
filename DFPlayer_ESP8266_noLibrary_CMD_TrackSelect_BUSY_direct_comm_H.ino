@@ -53,7 +53,7 @@ char packetBuffer[UDP_TX_PACKET_MAX_SIZE];
 SoftwareSerial serDF (D1, D2); // in | out WeMos D1Mini
 
 ///////////////////////////////////////////////////// Initialize Parameters
-uint8_t volume = 25; // 30 max
+uint8_t volume = 18; // 30 max
 char ball = 255;
 bool buttonST = 1;
 
@@ -61,23 +61,24 @@ bool buttonST = 1;
 void setup() {
   // set up serial port with DFPlayer
   serDF.begin(BaudRate_DF);
+  delay(100);
   // set up serial port USB;
   Serial.begin(115200); 
-  Serial.println();
+  delay(100);
   // set pin modes
   pinMode(D1, INPUT); // From DFplayer TX
   pinMode(D2, OUTPUT); // To DFplayer RX
   pinMode(D5, INPUT); //From DFplayer BUSY pin
-  pinMode(D4, INPUT); // LDR
+  pinMode(D4, INPUT); // Button or LDR sensor
   pinMode(D7, OUTPUT); // Standby indicator LED
   
   // Initialize DFPlayer
   initialize();
-  delay(100);
+  delay(500);
   setVolume(volume);
-  delay(100);
+  delay(500);
   playTrack(1);
-  delay(1000); // play duration
+  delay(3000); // play duration
 
   // Stop active previous WIFI
   WiFi.disconnect();
